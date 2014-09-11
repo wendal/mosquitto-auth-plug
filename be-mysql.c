@@ -37,6 +37,7 @@
 #include "log.h"
 #include "hash.h"
 #include "backends.h"
+#include "topic.h"
 
 struct mysql_backend {
         MYSQL *mysql;
@@ -303,8 +304,8 @@ int be_mysql_superuser(void *handle, const char *username)
  *	for subscriptions (READ) (1)
  *	for publish (WRITE) (2)
  *
- * SELECT topic FROM table WHERE username = '%s' AND (acc & %d)		// may user SUB or PUB topic?
- * SELECT topic FROM table WHERE username = '%s'              		// ignore ACC
+ * SELECT topic FROM table WHERE (username = '%s') AND (rw & '%d')	// check ACC
+ * SELECT topic FROM table WHERE username = '%s'                	// ignore ACC
  */
 
 int be_mysql_aclcheck(void *handle, const char *username, const char *topic, int acc)
@@ -316,6 +317,7 @@ int be_mysql_aclcheck(void *handle, const char *username, const char *topic, int
 	bool bf;
 	MYSQL_RES *res = NULL;
 	MYSQL_ROW rowdata;
+    unsigned long *lengths;
 
 	if (!conf || !conf->aclquery)
 		return (FALSE);
@@ -351,24 +353,21 @@ int be_mysql_aclcheck(void *handle, const char *username, const char *topic, int
 	}
 
 	while (match == 0 && (rowdata = mysql_fetch_row(res)) != NULL) {
-		if ((v = rowdata[0]) != NULL) {
-
-			/* Check mosquitto_match_topic. If true,
-			 * if true, set match and break out of loop. */
-
-			// FIXME: does this need special work for %c and %u ???
-			mosquitto_topic_matches_sub(v, topic, &bf);
+        lengths = mysql_fetch_lengths(res);
+		if (lengths > 0) {
+            v = rowdata[0];
+			// FIXME: it needs clientid due to special work for %c.
+            topic_matches_sub_with_substitution(v, topic, "clientid", username, &bf);
 			match |= bf;
-			_log(LOG_DEBUG, "  mysql: topic_matches(%s, %s) == %d",
-				topic, v, bf);
+			_log(LOG_DEBUG, "  mysql: topic_matches(request_topic = %s, db_topic = %s) == %d", topic, v, bf);
 		}
 	}
-
+    
    out:
 
 	mysql_free_result(res);
 	free(query);
-
+    
 	return (match);
 }
 #endif /* BE_MYSQL */

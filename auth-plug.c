@@ -449,6 +449,8 @@ int mosquitto_auth_acl_check(void *userdata, const char *clientid, const char *u
 
 	for (bep = ud->be_list; bep && *bep; bep++) {
 		struct backend_p *b = *bep;
+        
+        _log(LOG_DEBUG, "** checking backend %s whether superuser or not.", b->name);
 
 		match = b->superuser(b->conf, username);
 		if (match == 1) {
@@ -464,11 +466,12 @@ int mosquitto_auth_acl_check(void *userdata, const char *clientid, const char *u
 	for (bep = ud->be_list; bep && *bep; bep++) {
 		struct backend_p *b = *bep;
         
-		_log(LOG_DEBUG, "** checking backend %s", b->name);
+		_log(LOG_DEBUG, "** checking backend %s for individual acl", b->name);
         
         match = (*bep)->aclcheck((*bep)->conf, username, topic, access);
         if (match == 1) {
             authorized = TRUE;
+            break;
         }
 	}
 
