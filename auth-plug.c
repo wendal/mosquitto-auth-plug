@@ -134,6 +134,9 @@ int mosquitto_auth_plugin_init(void **userdata, struct mosquitto_auth_opt *auth_
 		// _log(LOG_DEBUG, "AuthOptions: key=%s, val=%s", o->key, o->value);
 
 		p_add(o->key, o->value);
+        
+        if (!strcmp(o->key, "plugin_log_level"))
+			_set_log_level(o->value);
 
 		if (!strcmp(o->key, "superusers"))
 			ud->superusers = strdup(o->value);
@@ -368,7 +371,7 @@ int mosquitto_auth_unpwd_check(void *userdata, const char *username, const char 
 	if (ud->superusers && ud->superusers_passwd) {
 		if (fnmatch(ud->superusers, username, 0) == 0 &&
             pbkdf2_check((char *)password, ud->superusers_passwd)) {
-			_log(DEBUG, "unpwdcheck(%s) GLOBAL SUPERUSER UNPWD=Y", username);
+			_log(LOG_DEBUG, "unpwdcheck(%s) GLOBAL SUPERUSER UNPWD=Y", username);
 			return MOSQ_ERR_SUCCESS;
 		}
 	}
@@ -401,7 +404,7 @@ int mosquitto_auth_unpwd_check(void *userdata, const char *username, const char 
 	/* Set name of back-end which authenticated */
 	backend_name = (authenticated) ? (*bep)->name : "none";
 
-	_log(DEBUG, "getuser(%s) AUTHENTICATED=%d by %s",
+	_log(LOG_DEBUG, "getuser(%s) AUTHENTICATED=%d by %s",
 		username, authenticated, backend_name);
 
 	return (authenticated) ? MOSQ_ERR_SUCCESS : MOSQ_ERR_AUTH;
@@ -415,7 +418,7 @@ int mosquitto_auth_acl_check(void *userdata, const char *clientid, const char *u
 	int match = 0, authorized = FALSE;
     bool canAccess;
 
-	_log(DEBUG, "mosquitto_auth_acl_check(..., %s, %s, %s, %d)",
+	_log(LOG_DEBUG, "mosquitto_auth_acl_check(..., %s, %s, %s, %d)",
 		clientid ? clientid : "NULL",
 		username ? username : "NULL",
 		topic ? topic : "NULL",
@@ -429,7 +432,7 @@ int mosquitto_auth_acl_check(void *userdata, const char *clientid, const char *u
 
 	if (ud->superusers) {
 		if (fnmatch(ud->superusers, username, 0) == 0) {
-			_log(DEBUG, "aclcheck(%s, %s, %d) GLOBAL SUPERUSER=Y",
+			_log(LOG_DEBUG, "aclcheck(%s, %s, %d) GLOBAL SUPERUSER=Y",
 				username, topic, access);
 			return MOSQ_ERR_SUCCESS;
 		}
@@ -441,7 +444,7 @@ int mosquitto_auth_acl_check(void *userdata, const char *clientid, const char *u
         topic_matches_sub_with_substitution(ud->glob_acl->topic, topic, clientid, username, &canAccess);
         match = canAccess && (access & ud->glob_acl->access);
   	    if (match == 1) {
-            _log(DEBUG, "aclcheck(%s, %s, %d) GLOBAL ACL PATTERN=Y",
+            _log(LOG_DEBUG, "aclcheck(%s, %s, %d) GLOBAL ACL PATTERN=Y",
                  username, topic, access);
             return MOSQ_ERR_SUCCESS;
         }
@@ -454,7 +457,7 @@ int mosquitto_auth_acl_check(void *userdata, const char *clientid, const char *u
 
 		match = b->superuser(b->conf, username);
 		if (match == 1) {
-			_log(DEBUG, "aclcheck(%s, %s, %d) SUPERUSER=Y by %s",
+			_log(LOG_DEBUG, "aclcheck(%s, %s, %d) SUPERUSER=Y by %s",
 				username, topic, access, b->name);
 			return MOSQ_ERR_SUCCESS;
 		}
@@ -478,7 +481,7 @@ int mosquitto_auth_acl_check(void *userdata, const char *clientid, const char *u
     /* Set name of back-end which authenticated */
 	backend_name = (authorized) ? (*bep)->name : "none";
 
-	_log(DEBUG, "aclcheck(%s, %s, %d) AUTHORIZED=%d by %s",
+	_log(LOG_DEBUG, "aclcheck(%s, %s, %d) AUTHORIZED=%d by %s",
 		username, topic, access, authorized, backend_name);
 
 	return (authorized) ?  MOSQ_ERR_SUCCESS : MOSQ_ERR_ACL_DENIED;

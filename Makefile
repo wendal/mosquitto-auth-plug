@@ -37,6 +37,9 @@ BE_DEPS = $(CDBLIB)
 ### LDAP ###
 #BE_LDFLAGS += -L/usr/lib -lldap -llber
 
+#-#-# Plugin Debug Mode #-#-#
+#PLUGIN_DEBUG_FLAG = -D_DEBUG_PLUGIN_
+
 MOSQUITTO_SRC=/Users/jpm/Auto/pubgit/MQTT/mosquitto/140/mosquitto/
 
 OPENSSLDIR=/usr/local/stow/openssl-1.0.0c/
@@ -46,7 +49,7 @@ OSSLIBS=-L$(OPENSSLDIR)/lib -lcrypto
 OBJS=auth-plug.o base64.o pbkdf2-check.o log.o hash.o be-psk.o be-cdb.o be-mysql.o be-sqlite.o be-redis.o be-postgres.o be-ldap.o topic.o
 CFLAGS = -I$(MOSQUITTO_SRC)/src/
 CFLAGS += -I$(MOSQUITTO_SRC)/lib/
-CFLAGS += -fPIC -Wall -Werror $(BACKENDS) $(BE_CFLAGS) -I$(MOSQ)/src -DDEBUG=1 $(OSSLINC)
+CFLAGS += -fPIC -Wall -Werror $(BACKENDS) $(BE_CFLAGS) -I$(MOSQ)/src $(PLUGIN_DEBUG_FLAG) $(OSSLINC)
 BE_CFLAGS += -I/usr/include
 LDFLAGS=$(BE_LDFLAGS) -lmosquitto $(OSSLIBS)
 LDFLAGS += -L$(MOSQUITTO_SRC)/lib/

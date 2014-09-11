@@ -271,6 +271,15 @@ auth_opt_ldap_uri ldap://127.0.0.1/ou=Users,dc=mens,dc=de?cn?sub?(&(objectclass=
 | redis_host     | localhost         |             | hostname / IP address
 | redis_port     | 6379              |             | TCP port number |
 
+```
+listener 1883
+
+auth_plugin /path/to/auth-plug.so
+auth_opt_redis_host 127.0.0.1
+auth_opt_redis_port 6379
+```
+
+
 ### PostgreSQL
 
 The `postgres`  like `mysql` back-end is currently the most feature-complete: it supports
@@ -437,15 +446,19 @@ $ redis-cli
 > QUIT
 ```
 
-## Configure Mosquitto
+## Plugin Log Level
 
 ```
-listener 1883
+# Plugin log level
+# LOG_LEVEL: DEBUG, NOTICE, WARN, NONE
+auth_opt_plugin_log_level WARN
+```
+Plugin log level can be specified in `auth_opt_plugin_log_level`.
+Plugin does not output any log in case of NONE.
 
-auth_plugin /path/to/auth-plug.so
-auth_opt_redis_host 127.0.0.1
-auth_opt_redis_port 6379
+## ACL
 
+```
 # Usernames with this fnmatch(3) (a.k.a glob(3))  pattern are exempt from the
 # module's ACL checking
 auth_opt_superusers S*
@@ -461,7 +474,6 @@ auth_opt_superusers_password PBKDF2$sha256$20000$WCpn9vz/zIQP4Oab$l/CTNNwleyQ28t
 auth_opt_global_acl_pattern read,write sensor/%u/+
 ```
 
-## ACL
 ### Superusers
 Users can be given "superuser" status (i.e. they may access any topic)
 if their username matches the _glob_ specified in `auth_opt_superusers`.

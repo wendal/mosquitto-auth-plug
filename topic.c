@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 flightonary <flightonary@users.noreply.github.com>
+ * Copyright (c) 2014 flightonary <jetBeaver@gmail.com>
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without

@@ -26,9 +26,16 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+#ifndef _LOG_H_
+#define _LOG_H_
 
-#define LOG_DEBUG (1)
+#define LOG_DEBUG  (1)
 #define LOG_NOTICE (2)
+#define LOG_WARN   (3)
+#define LOG_NONE   (4)
 
+void _set_log_level(const char *log_level);
 void _log(int priority, const char *fmt, ...);
 void _fatal(const char *fmt, ...);
+
+#endif //_LOG_H_

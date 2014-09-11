@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 flightonary <flightonary@users.noreply.github.com>
+ * Copyright (c) 2014 flightonary <jetBeaver@gmail.com>
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -26,6 +26,10 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+#ifndef _TOPIC_H_
+#define _TOPIC_H_
 
 char *topic_replace_substitution(const char *topic, const char *clientid, const char *username);
 int topic_matches_sub_with_substitution(const char *sub, const char *topic, const char *clientid, const char *username, bool *result);
+
+#endif //_TOPIC_H_
