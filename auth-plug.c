@@ -81,6 +81,7 @@ struct global_acl {
 struct userdata {
 	struct backend_p **be_list;
 	char *superusers;		     /* Static glob list */
+    char *superusers_passwd;     /* superusers password */
     struct global_acl *glob_acl; /* Static global acl */
 };
 
@@ -120,6 +121,7 @@ int mosquitto_auth_plugin_init(void **userdata, struct mosquitto_auth_opt *auth_
 	memset(*userdata, 0, sizeof(struct userdata));
 	ud = *userdata;
 	ud->superusers	= NULL;
+    ud->superusers_passwd = NULL;
     ud->glob_acl    = NULL;
 
 	/*
@@ -135,6 +137,9 @@ int mosquitto_auth_plugin_init(void **userdata, struct mosquitto_auth_opt *auth_
 
 		if (!strcmp(o->key, "superusers"))
 			ud->superusers = strdup(o->value);
+
+        if (!strcmp(o->key, "superusers_password"))
+			ud->superusers_passwd = strdup(o->value);
 
         if (!strcmp(o->key, "global_acl_pattern")) {
             pattern = strdup(o->value);
@@ -359,6 +364,15 @@ int mosquitto_auth_unpwd_check(void *userdata, const char *username, const char 
 
 	_log(LOG_DEBUG, "mosquitto_auth_unpwd_check(%s)", (username) ? username : "<nil>");
 
+    /* Check for superusers, first */
+	if (ud->superusers && ud->superusers_passwd) {
+		if (fnmatch(ud->superusers, username, 0) == 0 &&
+            pbkdf2_check((char *)password, ud->superusers_passwd)) {
+			_log(DEBUG, "unpwdcheck(%s) GLOBAL SUPERUSER UNPWD=Y", username);
+			return MOSQ_ERR_SUCCESS;
+		}
+	}
+
     for (bep = ud->be_list; bep && *bep; bep++) {
 		struct backend_p *b = *bep;
 
@@ -376,6 +390,7 @@ int mosquitto_auth_unpwd_check(void *userdata, const char *username, const char 
 		}
 		if (phash != NULL) {
 			match = pbkdf2_check((char *)password, phash);
+            free(phash);
 			if (match == 1) {
 				authenticated = TRUE;
 				break;
@@ -388,10 +403,6 @@ int mosquitto_auth_unpwd_check(void *userdata, const char *username, const char 
 
 	_log(DEBUG, "getuser(%s) AUTHENTICATED=%d by %s",
 		username, authenticated, backend_name);
-
-	if (phash != NULL) {
-		free(phash);
-	}
 
 	return (authenticated) ? MOSQ_ERR_SUCCESS : MOSQ_ERR_AUTH;
 }

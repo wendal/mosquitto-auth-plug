@@ -71,11 +71,12 @@ auth_plugin /path/to/auth-plug.so
 Options therein with a leading ```auth_opt_``` are handed to the plugin. The following
 "global" ```auth_opt_*``` plugin options exist:
 
-| Option             | default    |  Mandatory  | Meaning               |
-| ------------------ | ---------- | :---------: | --------------------- |
-| backends           |            |     Y       | comma-separated list of back-ends to load |
-| superusers         |            |             | fnmatch(3) case-sensitive string |
-| global_acl_pattern |            |             | access and acl pattern string |
+| Option              | default    |  Mandatory  | Meaning               |
+| ------------------- | ---------- | :---------: | --------------------- |
+| backends            |            |     Y       | comma-separated list of back-ends to load |
+| superusers          |            |             | fnmatch(3) case-sensitive string |
+| superusers_password |            |             | superusers password hash |
+| global_acl_pattern  |            |             | global acl pattern string |
 
 Individual back-ends have their options described in the sections below.
 
@@ -447,6 +448,7 @@ auth_opt_redis_port 6379
 # Usernames with this fnmatch(3) (a.k.a glob(3))  pattern are exempt from the
 # module's ACL checking
 auth_opt_superusers S*
+auth_opt_superusers_password PBKDF2$sha256$20000$WCpn9vz/zIQP4Oab$l/CTNNwleyQ28tcJUfIP2OxO2i7TsM88
 
 # Global ACL Pattern
 # format: (read|write|read,write) <pattern>
@@ -459,11 +461,17 @@ auth_opt_global_acl_pattern read,write sensor/%u/+
 ```
 
 ## ACL
+### Superusers
+Users can be given "superuser" status (i.e. they may access any topic)
+if their username matches the _glob_ specified in `auth_opt_superusers`.
 
-Global ACL are checked for in all back-ends.
-In our example above, any user can pub/sub topics which matches the pattern
-except for superusers.
-You may comment out line of global_acl_pattern in order not to apply global ACL.
+In our example above, any user with a username beginning with a capital `"S"`
+is exempt from ACL-checking.
+
+### Global ACL
+Global ACL are applied for non-superuser.
+In our example above, a user can pub/sub topics which matches the pattern.
+You may comment out line of `auth_opt_global_acl_pattern` in order not to apply global ACL.
 
 In addition to ACL checking which is possibly performed by a back-end.
 
@@ -472,11 +480,15 @@ Will topics (_last will and testament_). Failing to correctly set up
 an ACL for these, will cause a broker to silently fail with a 'not
 authorized' message.
 
-Users can be given "superuser" status (i.e. they may access any topic)
-if their username matches the _glob_ specified in `auth_opt_superusers`.
-
-In our example above, any user with a username beginning with a capital `"S"`
-is exempt from ACL-checking.
+## Superusers password
+Superusers password can be given in `auth_opt_superusers_password` 
+as PBKDF2 password hash.
+You may comment out line of `auth_opt_superusers_password` in order not to apply superusers password.
+PBKDF2 password hash can be derived as bellow;
+```
+$ np -i 20000 -p hoge
+$ PBKDF2$sha256$20000$WCpn9vz/zIQP4Oab$l/CTNNwleyQ28tcJUfIP2OxO2i7TsM88
+```
 
 ## PUB/SUB
 
