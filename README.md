@@ -473,6 +473,7 @@ Global ACL are applied for non-superuser.
 In our example above, a user can pub/sub topics which matches the pattern.
 You may comment out line of `auth_opt_global_acl_pattern` in order not to apply global ACL.
 
+### ACL by back-ends
 In addition to ACL checking which is possibly performed by a back-end.
 
 Note that if ACLs are being verified by the plugin, this also applies to
