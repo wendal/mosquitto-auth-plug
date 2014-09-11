@@ -33,7 +33,7 @@
 #include <string.h>
 #include <time.h>
 #include "log.h"
-#include <logging_mosq.h>
+//#include <logging_mosq.h>
 
 void _log(int priority, const char *fmt, ...)
 {
@@ -50,6 +50,7 @@ void _log(int priority, const char *fmt, ...)
 	fprintf(stderr, "\n");
 	fflush(stderr);
 	//FIXME: does this work? _mosquitto_log_printf(NULL, MOSQ_LOG_ERR, "NOPE");
+    // That does not work. The function is for mosquitto client, not for plugin.
 	va_end(va);
 }	
 

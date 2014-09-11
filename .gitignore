@@ -5,3 +5,5 @@ np
 jp*.conf
 *.a
 cdb
+*.xcodeproj/
+*.xcworkspace/
