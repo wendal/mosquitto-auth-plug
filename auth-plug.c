@@ -425,8 +425,12 @@ int mosquitto_auth_acl_check(void *userdata, const char *clientid, const char *u
 		access);
 
 
-	if (!clientid || !*clientid || !username || !*username || !topic || !*topic)
+	if (!clientid || !*clientid || !username || !*username || !topic || !*topic) {
+        if (!username) {
+            _log(LOG_DEBUG, "** deny anonymous (username is NULL)");
+        }
 		return MOSQ_ERR_ACL_DENIED;
+    }
 
 	/* Check for usernames exempt from ACL checking, first */
 

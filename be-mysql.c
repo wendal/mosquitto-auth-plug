@@ -116,7 +116,7 @@ void *be_mysql_init()
     }
 
 	if (!mysql_real_connect(conf->mysql, host, user, pass, dbname, port, NULL, 0)) {
-		_log(LOG_WARN, "  mysql: %s\n", mysql_error(conf->mysql));
+		_log(LOG_WARN, "  mysql: %s", mysql_error(conf->mysql));
         if (!conf->auto_connect) {
             // Never connect in this case
             free(conf);
@@ -160,7 +160,7 @@ static bool auto_connect(struct mysql_backend *conf)
 {
     if (conf->auto_connect) {
         if (!mysql_real_connect(conf->mysql, conf->host, conf->user, conf->pass, conf->dbname, conf->port, NULL, 0)) {
-            _log(LOG_NOTICE, "  mysql: do auto_connect but %s\n", mysql_error(conf->mysql));
+            _log(LOG_NOTICE, "  mysql: do auto_connect but %s", mysql_error(conf->mysql));
             return false;
         }
         return true;
@@ -180,7 +180,7 @@ char *be_mysql_getuser(void *handle, const char *username, const char *password,
 		return (NULL);
 
     if (mysql_ping(conf->mysql)) {
-        _log(LOG_NOTICE, "  mysql: %s\n", mysql_error(conf->mysql));
+        _log(LOG_NOTICE, "  mysql: %s", mysql_error(conf->mysql));
         if (!auto_connect(conf)) {
             return (NULL);
         }
@@ -199,18 +199,18 @@ char *be_mysql_getuser(void *handle, const char *username, const char *password,
 	_log(LOG_DEBUG, "  mysql: SQL: %s", query);
 
 	if (mysql_query(conf->mysql, query)) {
-		_log(LOG_WARN, "  mysql: %s\n", mysql_error(conf->mysql));
+		_log(LOG_WARN, "  mysql: %s", mysql_error(conf->mysql));
 		goto out;
 	}
 
 	res = mysql_store_result(conf->mysql);
 	if ((nrows = mysql_num_rows(res)) != 1) {
-		_log(LOG_NOTICE, "  mysql: rowcount = %ld; not ok\n", nrows);
+		_log(LOG_NOTICE, "  mysql: rowcount = %ld; not ok", nrows);
 		goto out;
 	}
 
 	if (mysql_num_fields(res) != 1) {
-		_log(LOG_NOTICE, "  mysql: numfields not ok\n");
+		_log(LOG_NOTICE, "  mysql: numfields not ok");
 		goto out;
 	}
 
@@ -244,11 +244,13 @@ int be_mysql_superuser(void *handle, const char *username)
 	MYSQL_ROW rowdata;
 
 
-	if (!conf || !conf->superquery)
+	if (!conf || !conf->superquery) {
+        _log(LOG_DEBUG, "  mysql: superquery is not configured");
 		return (FALSE);
+    }
 
     if (mysql_ping(conf->mysql)) {
-        _log(LOG_NOTICE, "  mysql: %s\n", mysql_error(conf->mysql));
+        _log(LOG_NOTICE, "  mysql: %s", mysql_error(conf->mysql));
         if (!auto_connect(conf)) {
             return (FALSE);
         }
@@ -267,18 +269,18 @@ int be_mysql_superuser(void *handle, const char *username)
 	_log(LOG_DEBUG, "  mysql: SQL: %s", query);
 
 	if (mysql_query(conf->mysql, query)) {
-		_log(LOG_WARN, "  mysql: %s\n", mysql_error(conf->mysql));
+		_log(LOG_WARN, "  mysql: %s", mysql_error(conf->mysql));
 		goto out;
 	}
 
 	res = mysql_store_result(conf->mysql);
 	if ((nrows = mysql_num_rows(res)) != 1) {
-        _log(LOG_NOTICE, "  mysql: rowcount = %ld; not ok\n", nrows);
+        _log(LOG_NOTICE, "  mysql: rowcount = %ld; not ok", nrows);
 		goto out;
 	}
 
 	if (mysql_num_fields(res) != 1) {
-		_log(LOG_NOTICE, "  mysql: superuser numfields is not 1\n");
+		_log(LOG_NOTICE, "  mysql: superuser numfields is not 1");
 		goto out;
 	}
 
@@ -321,11 +323,13 @@ int be_mysql_aclcheck(void *handle, const char *username, const char *topic, int
 	MYSQL_ROW rowdata;
     unsigned long *lengths;
 
-	if (!conf || !conf->aclquery)
+	if (!conf || !conf->aclquery) {
+        _log(LOG_DEBUG, "  mysql: aclquery is not configured");
 		return (FALSE);
+    }
 
     if (mysql_ping(conf->mysql)) {
-        _log(LOG_NOTICE, "  mysql: %s\n", mysql_error(conf->mysql));
+        _log(LOG_NOTICE, "  mysql: %s", mysql_error(conf->mysql));
         if (!auto_connect(conf)) {
             return (FALSE);
         }
@@ -350,7 +354,7 @@ int be_mysql_aclcheck(void *handle, const char *username, const char *topic, int
 
 	res = mysql_store_result(conf->mysql);
 	if (mysql_num_fields(res) != 1) {
-		_log(LOG_NOTICE, "  mysql: numfields not ok\n");
+		_log(LOG_NOTICE, "  mysql: numfields not ok");
 		goto out;
 	}
 

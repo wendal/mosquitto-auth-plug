@@ -36,7 +36,7 @@ char *strrep(const char *input, const char *search, const char *replace) {
     size_t searchLen, replaceLen, delta;
     char *find, *buf, *reallocTmp;
 
-    if(!input)
+    if(!input || !search || !*search || !replace)
         return NULL;
 
     searchLen = strlen(search);
@@ -81,6 +81,9 @@ char *strrep(const char *input, const char *search, const char *replace) {
 char *topic_replace_substitution(const char *topic, const char *clientid, const char *username) {
     char *replaced_c = NULL, *replaced_u = NULL;
 
+    if(!topic || !clientid || !username)
+        return NULL;
+
     replaced_c = strrep(topic, "%c", clientid);
     replaced_u = strrep(replaced_c, "%u", username);
     free(replaced_c);
@@ -117,6 +120,9 @@ char *topic_replace_substitution(const char *topic, const char *clientid, const 
 int topic_matches_sub_with_substitution(const char *sub, const char *topic, const char *clientid, const char *username, bool *result) {
     char *topic_r = NULL;
     int ret = MOSQ_ERR_NOMEM;
+
+    if(!sub || !topic || !clientid || !username || !result)
+        return ret;
 
     topic_r = topic_replace_substitution(sub, clientid, username);
     if (!topic_r)
